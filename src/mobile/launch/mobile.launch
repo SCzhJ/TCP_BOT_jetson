@@ -1,0 +1,9 @@
+<launch>
+    <!-- Node for rosserial_arduino -->
+    <node pkg="rosserial_python" type="serial_node.py" name="rosserial_arduino" output="screen" >
+        <!-- Set the serial port and the baud rate for the Arduino board -->
+        <param name="port" value="/dev/ttyUSB0" />
+        <param name="baud" value="115200" />
+    </node>
+
+</launch>

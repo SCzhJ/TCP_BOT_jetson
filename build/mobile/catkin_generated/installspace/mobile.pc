@@ -1,0 +1,8 @@
+prefix=/home/tcpb/tcpb_ws/install
+
+Name: mobile
+Description: Description of mobile
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

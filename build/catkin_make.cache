@@ -1,0 +1,2 @@
+mobile
+-DCATKIN_DEVEL_PREFIX=/home/tcpb/tcpb_ws/devel -DCMAKE_INSTALL_PREFIX=/home/tcpb/tcpb_ws/install -G Unix Makefiles
