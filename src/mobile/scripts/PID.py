@@ -71,21 +71,21 @@ class PID:
 
 class YawController:
     def __init__(self):
-        self.pid = PID(P=0.2, I=0.01, D=0.0, MAX_OUPUT=1.5, MIN_OUTPUT=-1.5)
+        self.pid = PID(P=0.17, I=0.02, D=0.0, MAX_OUPUT=1.5, MIN_OUTPUT=-1.5)
         self.pid.setWindup(1.0)
         self.pid.SetPoint = 0.0  # Desired yaw angle
         self.pid.setSampleTime(0.02)
 
         self.vel = Twist()
         self.vel.angular.x = 1 
-        self.vel_pub = rospy.Publisher('vel', Twist, queue_size=10)
-        self.yaw_sub = rospy.Subscriber('yaw', Float32, self.yaw_callback)
+        self.vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
+        self.yaw_sub = rospy.Subscriber('theta', Float32, self.yaw_callback)
 
         self.yaw_rate = 0.0
 
     def yaw_callback(self, msg):
         # Convert yaw angle from degrees to radians
-        yaw = msg.data
+        yaw = msg.data / 3.14159265359 * 180
 
         error = self.pid.SetPoint - yaw
         # Handle angle wrap-around
@@ -111,10 +111,11 @@ class YawController:
         self.pid.clear()
         self.pid.setNewGoal(setPoint)
 
+
 if __name__ == '__main__':
     rospy.init_node('yaw_controller', anonymous=True)
     controller = YawController()
-    vel_pub = rospy.Publisher("vel", Twist, queue_size = 5)
+    vel_pub = rospy.Publisher("cmd_vel", Twist, queue_size = 5)
     rate = rospy.Rate(10)
     while not rospy.is_shutdown():
         angle = float(input("input an angle: "))

@@ -1,8 +1,8 @@
 <launch>
     <!-- Node for rosserial_arduino -->
+    <node pkg="mobile" type="vel_convert.py" name="vel_convert" />
     <node pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" name="teleop_twist_keyboard" output="screen" >
         <remap from="cmd_vel" to="vel" />
     </node>
-    <node pkg="mobile" type="vel_convert.py" name="vel_convert" />
 
 </launch>
