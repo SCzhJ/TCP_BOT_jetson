@@ -42,6 +42,11 @@ class RobotControl:
         self.ultraR_mv = MovingAverage(4)
         self.distR = float("inf")
 
+        self.LDRR_sub = rospy.Subscriber("LDRR", Float32, self.LDRR_cb)
+        self.LDRR = 100
+        self.LDRL_sub = rospy.Subscriber("LDRL", Float32, self.LDRL_cb)
+        self.LDRL = 100
+
         self.dt = 0.05
         self.rate = rospy.Rate(1/self.dt)
 
@@ -52,17 +57,22 @@ class RobotControl:
 
         self.to_left = None
 
-        self.set_dist = 10
+        self.set_dist = 12
 
     def dist_metric(self):
         # return self.distL ** 2 + self.distR ** 2
-        return abs(self.distL-self.distR) + (self.distL+self.distR)/100
+        return 2*abs(self.distL-self.distR)
+    
+    def LDRR_cb(self, msg):
+        self.LDRR = msg.data
+    def LDRL_cb(self, msg):
+        self.LDRL = msg.data
 
     def ultraL_callback(self,msg):
-        if msg.data > 130:
+        if msg.data > 150:
             pass
-        elif msg.data > 100:
-            self.distL = self.ultraL_mv.add(100)
+        elif msg.data > 120:
+            self.distL = self.ultraL_mv.add(120)
         else:
             self.distL = self.ultraL_mv.add(msg.data)
     def ultraR_callback(self,msg):
@@ -154,6 +164,8 @@ class RobotControl:
             self.to_left = False
         else:
             self.to_left = True
+        print("to left:")
+        print(self.to_left)
         time.sleep(5)
     
     def Approach(self):
@@ -242,7 +254,7 @@ class RobotControl:
         self.vel.angular.x = 1
         self.vel.linear.y = 0
         self.vel.linear.x = 0.10
-        while self.distL > 13 and (not rospy.is_shutdown()):
+        while self.distL > 15 and (not rospy.is_shutdown()):
             print(self.distL)
             self.vel.angular.x = 1
             yaw_rate = self.updateUltraPIDturn(ultra_PID)
@@ -263,36 +275,71 @@ class RobotControl:
         ultra_PID.setWindup(1.4)
         ultra_PID.setSampleTime(0.05)
 
-        ultra_PID_dist = PID(P=0.015, I=0.002, D=0.0, MAX_OUPUT=0.6, MIN_OUTPUT=-0.6)
+        ultra_PID_dist = PID(P=0.025, I=0.004, D=0.0, MAX_OUPUT=0.7, MIN_OUTPUT=-0.7)
         ultra_PID_dist.clear()
-        ultra_PID_dist.setWindup(0.50)
+        ultra_PID_dist.setWindup(0.60)
         ultra_PID_dist.setSampleTime(0.05)
         self.vel.angular.x = 1
         self.vel.linear.x = 0
-        self.vel.linear.y = -0.15
+        # print("to left:")
+        # print(self.to_left)
+        # if self.to_left == True:
+        #     self.vel.linear.y = 0.18
+        # else:
+        #     self.vel.linear.y = -0.18
+
+
         acc_time = 0
-        while not rospy.is_shutdown():
-            acc_time += self.dt
-            yaw_rate = self.updateUltraPIDturn(ultra_PID)
-            self.vel.angular.x = 1
-            self.vel.angular.z = yaw_rate
-            if yaw_rate > 0.1:
-                self.vel.angular.z += 0.05
-            if yaw_rate < -0.1:
-                self.vel.angular.z -= 0.05
+        right_time = 3
+        left_time = 3
+        end = False
 
-            lin_x = self.updateUltraPIDdist(ultra_PID_dist)
-            self.vel.linear.x = lin_x
+        while not rospy.is_shutdown() and (not end):
+            self.vel.linear.y = -0.3
+            while not rospy.is_shutdown() and (not end):
+                acc_time += self.dt
+                yaw_rate = self.updateUltraPIDturn(ultra_PID)
+                self.vel.angular.x = 1
+                self.vel.angular.z = yaw_rate
+                if yaw_rate > 0.1:
+                    self.vel.angular.z += 0.05
+                if yaw_rate < -0.1:
+                    self.vel.angular.z -= 0.05
+                lin_x = self.updateUltraPIDdist(ultra_PID_dist)
+                self.vel.linear.x = lin_x
+                self.vel_pub.publish(self.vel)
+                self.rate.sleep()
+                self.vel_pub.publish(self.vel)
+                self.rate.sleep()
 
-            # rospy.loginfo(yaw_rate)
-            rospy.loginfo(lin_x)
-            self.vel_pub.publish(self.vel)
-            self.rate.sleep()
-            self.vel_pub.publish(self.vel)
+                end = self.EndCondition()
+                if acc_time > right_time:
+                    acc_time = 0
+                    break
+                right_time -= 0.3
 
-            self.rate.sleep()
-            if acc_time > 1.5:
-                break
+            self.vel.linear.y = 0.3
+            while not rospy.is_shutdown() and (not end):
+                acc_time += self.dt
+                yaw_rate = self.updateUltraPIDturn(ultra_PID)
+                self.vel.angular.x = 1
+                self.vel.angular.z = yaw_rate
+                if yaw_rate > 0.1:
+                    self.vel.angular.z += 0.05
+                if yaw_rate < -0.1:
+                    self.vel.angular.z -= 0.05
+                lin_x = self.updateUltraPIDdist(ultra_PID_dist)
+                self.vel.linear.x = lin_x
+                self.vel_pub.publish(self.vel)
+                self.rate.sleep()
+                self.vel_pub.publish(self.vel)
+                self.rate.sleep()
+
+                end = self.EndCondition()
+                if acc_time > left_time:
+                    acc_time = 0
+                    break
+                left_time -= 0.3
 
         self.yaw_pub = 0
         self.vel.linear.x = 0
@@ -321,6 +368,11 @@ class RobotControl:
         self.Rotate()
         self.Shift()
     
+    def EndCondition(self):
+        if self.LDR + self.LDRL > 400:
+            return True
+        else:
+            return False
 
     def wrapAngle(self, angle):
         while angle > 360:
