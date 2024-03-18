@@ -48,8 +48,8 @@ class PID:
                 self.ITerm = self.windup_guard
 
             self.DTerm = 0.0
-            if delta_time > 0:
-                self.DTerm = delta_error / delta_time
+            # if delta_time > 0:
+            #     self.DTerm = delta_error / delta_time
 
             # Remember last time and last error for next calculation
             self.last_time = self.current_time

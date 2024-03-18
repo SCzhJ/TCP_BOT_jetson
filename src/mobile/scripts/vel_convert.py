@@ -10,11 +10,12 @@ def cmd_vel_callback(data):
         vel.linear.y = -data.angular.z/abs(data.angular.z) * abs(data.linear.x)
         vel.linear.x = 0
         vel.angular.z = 0
+        vel.angular.x = 1
     else:
         vel = data
+        vel.angular.x = 1
     # angular.x is halt message, if not zero, then not halt when vel change
     # else halt when vel change
-    vel.angular.x = data.angular.x
 
 if __name__ == '__main__':
     rospy.init_node('cmd_vel_listener', anonymous=True)
