@@ -25,7 +25,7 @@ class MovingAverage:
 
 class RobotControl:
     def __init__(self):
-        self.pid = PID(P=0.15, I=0.07, D=0.0, MAX_OUPUT=1.3, MIN_OUTPUT=-1.3)
+        self.pid = PID(P=0.15, I=0.03, D=0.0, MAX_OUPUT=1.3, MIN_OUTPUT=-1.3)
         self.pid.setWindup(1.3)
         self.pid.SetPoint = 0.0  # Desired yaw angle
         self.pid.setSampleTime(0.02)
@@ -53,6 +53,11 @@ class RobotControl:
         self.to_left = None
 
         self.set_dist = 10
+
+    def dist_metric(self):
+        # return self.distL ** 2 + self.distR ** 2
+        return abs(self.distL-self.distR) + (self.distL+self.distR)/100
+
     def ultraL_callback(self,msg):
         if msg.data > 130:
             pass
@@ -101,14 +106,14 @@ class RobotControl:
     def Align(self):
         self.yaw_pub = 1
         rospy.loginfo("align")
-        turn_angle = 50
+        turn_angle = 60
         min_dist = float("inf")
         yaw_angle = 0
 
         self.setNewGoal(turn_angle)
         rospy.loginfo("set turn angle")
         while self.yaw < self.wrapAngle(turn_angle-10) or self.yaw > self.wrapAngle(turn_angle+10) :
-            dist = (self.distL + self.distR)/2
+            dist = self.dist_metric()
             if dist < min_dist:
                 min_dist = dist
                 yaw_angle = self.yaw
@@ -122,7 +127,7 @@ class RobotControl:
         self.setNewGoal(1)
         print("begin")
         while self.yaw > self.wrapAngle(355) or self.yaw < self.wrapAngle(5) :
-            dist = (self.distL + self.distR)/2
+            dist = self.dist_metric()
             if dist < min_dist:
                 min_dist = dist
                 yaw_angle = self.yaw
@@ -134,7 +139,7 @@ class RobotControl:
         self.setNewGoal(-turn_angle)
 
         while self.yaw < self.wrapAngle(-turn_angle-5) or self.yaw > self.wrapAngle(-turn_angle + 5) :
-            dist = (self.distL + self.distR)/2
+            dist = self.dist_metric()
             if dist < min_dist:
                 min_dist = dist
                 yaw_angle = self.yaw
@@ -185,63 +190,89 @@ class RobotControl:
         for i in range(10):
             self.rate.sleep()
             self.vel_pub.publish(self.vel)
+        self.yaw_angle = self.yaw
     
     def Rotate(self):
         time.sleep(1)
         self.yaw_pub = 1
 
-        self.setNewGoal(90)
-        rospy.loginfo("turn to 90")
-        while not (self.yaw < 95 and self.yaw > 85):
-            self.rate.sleep()
-
-        time.sleep(2)
-        self.setNewGoal(0)
-        rospy.loginfo("turn to 0")
-        while not ((self.yaw < 5 and self.yaw >=0) or (self.yaw <= 360 and self.yaw > 355)):
-            self.rate.sleep()
-
-        self.setNewGoal(-90)
+        self.setNewGoal(self.yaw_angle - 90)
         rospy.loginfo("turn to -90")
-        while not (self.yaw < 275 and self.yaw >= 265):
+        while self.withInAngle(self.yaw_angle - 90, 5, self.yaw) == False:
             self.rate.sleep()
 
-        self.setNewGoal(180)
-        rospy.loginfo("turn to 180")
-        while not (self.yaw < 185 and self.yaw >= 175):
-            self.rate.sleep()
-
-        time.sleep(2)
-
-        self.setNewGoal(90)
-        rospy.loginfo("turn to 90")
-        while not (self.yaw < 95 and self.yaw >= 85):
-            self.rate.sleep()
-
-        self.setNewGoal(0)
+        time.sleep(5)
+        self.setNewGoal(self.yaw_angle + 0)
         rospy.loginfo("turn to 0")
-        while not ((self.yaw < 5 and self.yaw >=0) or (self.yaw <= 360 and self.yaw > 355)):
+        while self.withInAngle(self.yaw_angle + 0, 5, self.yaw) == False:
+            self.rate.sleep()
+
+        self.setNewGoal(self.yaw_angle+90)
+        rospy.loginfo("turn to 90")
+        while self.withInAngle(self.yaw_angle + 90, 5, self.yaw) == False:
+            self.rate.sleep()
+
+        self.setNewGoal(self.yaw_angle+180)
+        rospy.loginfo("turn to 180")
+        while self.withInAngle(self.yaw_angle+180, 5, self.yaw) == False:
+            self.rate.sleep()
+
+        time.sleep(5)
+
+        self.setNewGoal(self.yaw_angle+90)
+        rospy.loginfo("turn to 90")
+        while self.withInAngle(self.yaw_angle+90, 5, self.yaw) == False:
+            self.rate.sleep()
+
+        self.setNewGoal(self.yaw_angle + 0)
+        rospy.loginfo("turn to 0")
+        while self.withInAngle(self.yaw_angle + 0, 5, self.yaw) == False:
             self.rate.sleep()
         
-        time.sleep(2)
+        time.sleep(4)
     
     def Shift(self):
+        self.yaw_pub = 0
+        ultra_PID = PID(P=0.2, I=0.001, D=0.0, MAX_OUPUT=1.1, MIN_OUTPUT=-1.1)
+        ultra_PID.clear()
+        ultra_PID.setWindup(1.1)
+        ultra_PID.setSampleTime(0.05)
+        time.sleep(1)
+
+        self.vel.angular.x = 1
+        self.vel.linear.y = 0
+        self.vel.linear.x = 0.10
+        while self.distL > 13 and (not rospy.is_shutdown()):
+            print(self.distL)
+            self.vel.angular.x = 1
+            yaw_rate = self.updateUltraPIDturn(ultra_PID)
+            self.vel.angular.z = yaw_rate
+            if yaw_rate > 0.1:
+                self.vel.angular.z += 0.05
+            if yaw_rate < -0.1:
+                self.vel.angular.z -= 0.05
+            self.vel_pub.publish(self.vel)
+            self.rate.sleep()
+            self.vel_pub.publish(self.vel)
+            self.rate.sleep()
+        rospy.loginfo("End")
+
         self.yaw_pub = 0
         ultra_PID = PID(P=0.4, I=0.002, D=0.0, MAX_OUPUT=1.4, MIN_OUTPUT=-1.4)
         ultra_PID.clear()
         ultra_PID.setWindup(1.4)
         ultra_PID.setSampleTime(0.05)
 
-        ultra_PID_dist = PID(P=0.03, I=0.003, D=0.0, MAX_OUPUT=0.6, MIN_OUTPUT=-0.6)
+        ultra_PID_dist = PID(P=0.015, I=0.002, D=0.0, MAX_OUPUT=0.6, MIN_OUTPUT=-0.6)
         ultra_PID_dist.clear()
         ultra_PID_dist.setWindup(0.50)
         ultra_PID_dist.setSampleTime(0.05)
         self.vel.angular.x = 1
         self.vel.linear.x = 0
-        self.vel.linear.y = 0.3
-        time = 0
+        self.vel.linear.y = -0.15
+        acc_time = 0
         while not rospy.is_shutdown():
-            time += self.dt
+            acc_time += self.dt
             yaw_rate = self.updateUltraPIDturn(ultra_PID)
             self.vel.angular.x = 1
             self.vel.angular.z = yaw_rate
@@ -260,7 +291,7 @@ class RobotControl:
             self.vel_pub.publish(self.vel)
 
             self.rate.sleep()
-            if time > 2:
+            if acc_time > 1.5:
                 break
 
         self.yaw_pub = 0
@@ -297,6 +328,20 @@ class RobotControl:
         while angle < 0:
             angle += 360
         return angle
+    
+    def withInAngle(self, target_angle, error_tolerance, current_angle):
+        # Ensure the target angle is between 0 and 360
+        target_angle = target_angle % 360
+
+        # Calculate the lower and upper bounds
+        lower_bound = (current_angle - error_tolerance) % 360
+        upper_bound = (current_angle + error_tolerance) % 360
+
+        # Check if the target angle is within the error tolerance
+        if lower_bound <= upper_bound:
+            return lower_bound <= target_angle <= upper_bound
+        else:  # The range crosses the 0/360 boundary
+            return target_angle >= lower_bound or target_angle <= upper_bound
 
 
 if __name__=="__main__":
