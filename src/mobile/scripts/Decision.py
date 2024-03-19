@@ -117,6 +117,7 @@ class RobotControl:
         self.pid.setNewGoal(setPoint)
     
     def Align(self):
+        time.sleep(1)
         self.yaw_pub = 1
         rospy.loginfo("align")
         turn_angle = 60
@@ -182,7 +183,7 @@ class RobotControl:
         self.vel.angular.x = 1
         self.vel.linear.y = 0
         self.vel.linear.x = 0.25
-        while self.distL > 35 and (not rospy.is_shutdown()):
+        while self.distL > 31 and (not rospy.is_shutdown()):
             print(self.distL)
             self.vel.angular.x = 1
             yaw_rate = self.updateUltraPIDturn(ultra_PID)
@@ -293,12 +294,13 @@ class RobotControl:
 
 
         acc_time = 0
-        right_time = 3.0
-        left_time = 7.0
+        right_time = 6
+        left_time = 14
         end = False
+        self.set_dist = 12
 
         while not rospy.is_shutdown() and (not end):
-            self.vel.linear.y = -0.3
+            self.vel.linear.y = -0.2
             while not rospy.is_shutdown() and (not end):
                 acc_time += self.dt * 2
                 yaw_rate = self.updateUltraPIDturn(ultra_PID)
@@ -329,7 +331,7 @@ class RobotControl:
                 print("timeout")
                 break
 
-            self.vel.linear.y = 0.3
+            self.vel.linear.y = 0.2
             while not rospy.is_shutdown() and (not end):
                 acc_time += self.dt * 2
                 yaw_rate = self.updateUltraPIDturn(ultra_PID)
@@ -370,7 +372,7 @@ class RobotControl:
         # ultra_PID_dist = PID(P=0.1, I=0.02, D=0.0, MAX_OUPUT=1.5, MIN_OUTPUT=-1.5)
     def Adjust(self):
         self.yaw_pub = 0
-        ultra_PID = PID(P=0.3, I=0.0015, D=0.0, MAX_OUPUT=1.4, MIN_OUTPUT=-1.4)
+        ultra_PID = PID(P=0.33, I=0.0025, D=0.0, MAX_OUPUT=1.4, MIN_OUTPUT=-1.4)
         ultra_PID.clear()
         ultra_PID.setWindup(1.4)
         ultra_PID.setSampleTime(0.05)
@@ -383,8 +385,8 @@ class RobotControl:
         self.vel.linear.x = 0
 
         acc_time = 0
-        set_time = 3
-        self.set_dist = 8
+        set_time = 7
+        self.set_dist = 7.5
 
         while not rospy.is_shutdown():
             acc_time += self.dt * 2
@@ -405,6 +407,15 @@ class RobotControl:
             if acc_time > set_time:
                 acc_time = 0
                 break
+
+        self.yaw_pub = 0
+        self.vel.linear.x = 0
+        self.vel.linear.y = 0
+        self.vel.angular.x = 0
+        self.vel.angular.z = 0
+        for i in range(10):
+            self.rate.sleep()
+            self.vel_pub.publish(self.vel)
     
     def updateUltraPIDturn(self, ultra_PID):
         error = self.distR - self.distL
@@ -426,7 +437,7 @@ class RobotControl:
         print("left: " + str(self.LDRL))
         print("rigt: " + str(self.LDRR))
         # print(self.LDRR+self.LDRL)
-        if self.LDRR + self.LDRL > 350:
+        if self.LDRR + self.LDRL > 485:
             return True
         else:
             return False
@@ -462,6 +473,7 @@ if __name__=="__main__":
     robot_control.Approach()
     robot_control.Rotate()
     robot_control.Shift()
+    robot_control.Adjust()
     # while not rospy.is_shutdown():
     #     robot_control.EndCondition()
     #     time.sleep(0.2)
