@@ -13,7 +13,7 @@ def cmd_vel_callback(data):
         vel.angular.x = 1
     else:
         vel = data
-        vel.angular.x = 1
+        # vel.angular.x = 1
     # angular.x is halt message, if not zero, then not halt when vel change
     # else halt when vel change
 
