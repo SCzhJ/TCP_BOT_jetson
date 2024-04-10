@@ -1,0 +1,4 @@
+<launch>
+    <include file="$(find mobile)/launch/ser.launch" />
+    <include file="$(find lslidar_driver)/launch/lslidar_serial.launch" />
+</launch>

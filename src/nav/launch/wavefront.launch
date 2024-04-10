@@ -1,0 +1,12 @@
+<launch>
+    <node pkg="nav" type="wavefront" name="wavefront" output="screen">
+        <param name="base_frame" type="string" value="base_link" />
+        <param name="laser_frame" type="string" value="laser" />
+        <param name="scan_topic" type="string" value="scan" />
+        <param name="map_topic" type="string" value="grid" />
+        <param name="map_resolution" type="double" value="0.01" />
+        <param name="map_len" type="int" value="90" />
+        <param name="obs_threshold" type="int" value="13" />
+        <param name="delta_time" type="double" value="0.05" />
+    </node>
+</launch>

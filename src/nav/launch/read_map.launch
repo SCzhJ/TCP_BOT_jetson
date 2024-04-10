@@ -1,0 +1,4 @@
+<launch>
+    <arg name="map" default="lg205part.yaml" />
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find nav)/map/$(arg map)"/>
+</launch>
