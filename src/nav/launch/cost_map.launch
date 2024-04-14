@@ -1,7 +1,7 @@
 <launch>
-    <arg name="map" default="lg205part.yaml" />
+    <arg name="map" default="innobsa.yaml" />
     <node name="map_server" pkg="map_server" type="map_server" args="$(find nav)/map/$(arg map)"/>
     <node pkg="nav" type="collision_cost_map.py" name="collision_cost_map" output="screen">
-        <param name="map_path" type="string" value="lg205part"/>
+        <param name="map_path" type="string" value="innobsa"/>
     </node>
 </launch>

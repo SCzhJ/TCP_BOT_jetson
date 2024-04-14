@@ -139,6 +139,7 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(wavefront src/wavefront.cpp)
+add_executable(real_robot_transform src/real_robot_transform.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -152,6 +153,9 @@ add_executable(wavefront src/wavefront.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(wavefront
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(real_robot_transform
   ${catkin_LIBRARIES}
 )
 

@@ -85,6 +85,27 @@ class TrajectoryMode:
         for i in range(num_of_traj_one_side):
             trajectories.append(trajObject(x_vel, 0, -omega_increment * (i+1)))
         return trajectories
+
+    @staticmethod
+    def TurnTrajectory(x_vel: float, omega_increment: float, num_of_traj_one_side: int) -> List[trajObject]:
+        """
+        Set velocity for trajectories of differential drive robot, no y velocity
+        """
+        trajectories = []
+        for i in range(num_of_traj_one_side):
+            trajectories.append(trajObject(x_vel, 0, omega_increment * (num_of_traj_one_side - i)))
+        for i in range(num_of_traj_one_side):
+            trajectories.append(trajObject(x_vel, 0, -omega_increment * (i+1)))
+        return trajectories
+
+    @staticmethod
+    def FixcostTrajectory(x_vel: float, y_vel: float, omega: float, fix_cost: float) -> List[trajObject]:
+        """
+        Set velocity for trajectories of differential drive robot, no y velocity
+        """
+        trajectories = []
+        trajectories.append(trajObject(x_vel, y_vel, omega, cost_type="constant", proposed_cost=fix_cost))
+        return trajectories
     
     @staticmethod
     def GenTrajectory(traj: trajObject, dt: float = 0.1, record_every_iter: int = 10, iteration: int = 10):

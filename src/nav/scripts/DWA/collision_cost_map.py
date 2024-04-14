@@ -35,6 +35,11 @@ class CostMap:
         """Store the cost map in a file."""
         with open(name_of_file, 'wb') as f:
             pickle.dump(self.cost_map, f)
+    
+    def store_raw_map(self, name_of_file: str):
+        """Store the raw map in a file."""
+        with open(name_of_file, 'wb') as f:
+            pickle.dump(self.grid_map.data, f)
 
     def gen_cost_map_old(self):
         """Generate the cost map."""

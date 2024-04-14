@@ -32,7 +32,7 @@ class NavCtrl:
     _result = NavActionResult()
     def __init__(self, trajectories: List[trajObject], cost_map_path: str, dyn_map_name: str,
                  dt: float, traj_cut_percentage: float = 0.5, iter_percentage: float = 0.5,
-                 pathfollowext_percentage: float = 0.8, cmd_vel_topic: str = "/cmd_vel",
+                 pathfollowext_percentage: float = 0.4, cmd_vel_topic: str = "/cmd_vel",
                  within_point: float = 0.7, within_goal: float = 0.5, cost_method: str = "omni"):
         self._action_name = "nav_ctrl"
         self._as = actionlib.SimpleActionServer(self._action_name, NavActionAction, execute_cb=self.nav_to_goal, auto_start = False)
@@ -78,7 +78,7 @@ class NavCtrl:
         # other
         self.cmd_publisher = rospy.Publisher(cmd_vel_topic, Twist, queue_size=10)
         self.dt = dt
-        self.vel_scaler = 2
+        self.vel_scaler = 1
         self.loc_tran = None
     
     def call_rrt_star(self, curr_x: float, curr_y: float, goal_x: float, goal_y: float):
@@ -125,7 +125,10 @@ class NavCtrl:
         scaler = np.sqrt((next_point.x - self.loc_tran.transform.translation.x)**2 + \
                          (next_point.y - self.loc_tran.transform.translation.y)**2)
         for traj in self.trajectories:
-            cost = self.cost(traj.world_frame_traj_poses, traj.traj_poses, next_point, scaler)
+            if traj.cost_type == "constant":
+                cost = traj.proposed_cost
+            else:
+                cost = self.cost(traj.world_frame_traj_poses, traj.traj_poses, next_point, scaler)
             if cost < min_cost:
                 min_cost = cost
                 best_traj = traj
@@ -224,11 +227,13 @@ if __name__=="__main__":
 
     dt = 0.2
     trajectories = \
-        TrajectoryMode.DifferentialDriveTrajectory(x_vel=0.4, omega_increment=0.15, num_of_traj_one_side=7) + \
-        TrajectoryMode.DifferentialDriveTrajectory(x_vel=0.05, omega_increment=0.1, num_of_traj_one_side=7)
+        TrajectoryMode.DifferentialDriveTrajectory(x_vel=0.4, omega_increment=0.15, num_of_traj_one_side=7) +\
+        TrajectoryMode.FixcostTrajectory(x_vel=-0.5, y_vel=0, omega=0, fix_cost=99) +\
+        TrajectoryMode.TurnTrajectory(x_vel=0.2, omega_increment=1.2, num_of_traj_one_side=1)
+        # TrajectoryMode.DifferentialDriveTrajectory(x_vel=-0.2, omega_increment=0.15, num_of_traj_one_side=3)
 
     for traj in trajectories:
-        TrajectoryMode.GenTrajectory(traj, dt=0.1, record_every_iter=1, iteration=10)
+        TrajectoryMode.GenTrajectory(traj, dt=0.1, record_every_iter=1, iteration=16)
     
     cost_map_path = rospy.get_param("~cost_map_path")
     dyn_map_name = rospy.get_param("~dyn_map_name")    
