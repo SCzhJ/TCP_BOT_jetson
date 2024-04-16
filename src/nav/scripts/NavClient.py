@@ -15,6 +15,11 @@ from test_util_2 import *
 def feedback_cb(feedback):
     print('[Feedback] Progress: {0}'.format(feedback.progress_bar))
 
+done = False
+def done_cb(state, result):
+    global done
+    done = True
+
 if __name__ == '__main__':
     rospy.init_node('example_action_client')
 
@@ -29,11 +34,12 @@ if __name__ == '__main__':
                 action_started = False
                 client.cancel_goal()
             if action_started == False:
+                done = False
                 action_started = True
                 client.wait_for_server()
                 goal = NavActionGoal(clicked_point_sub.clicked_point.x,
                                      clicked_point_sub.clicked_point.y)
-                client.send_goal(goal, feedback_cb=feedback_cb)
+                client.send_goal(goal, done_cb=done_cb, feedback_cb=feedback_cb)
         rate.sleep()
     if action_started == True:
         client.cancel_goal()
