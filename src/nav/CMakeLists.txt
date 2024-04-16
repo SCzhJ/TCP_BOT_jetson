@@ -62,6 +62,7 @@ add_message_files(
 add_service_files(
   FILES
   RRTStar.srv
+  pick.srv
 )
 
 ## Generate actions in the 'action' folder

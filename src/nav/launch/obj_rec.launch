@@ -1,0 +1,6 @@
+<launch>
+    <node name="recognition" pkg="nav" type="recognition.py" output="screen">
+        <env name="PYTHONPATH" value="/opt/ros/melodic/lib/python2.7/dist-packages:/home/nvidia/tcpb_ws/devel/lib/python3/dist-packages:/home/nvidia/tcpb_ws/src/nav/scripts/ultralytics/venv/lib/python3.8/site-packages" />
+        <!-- <env name="PYTHON_EXECUTABLE" value="/home/nvidia/tcpb_ws/src/nav/scripts/ultralytics/venv/bin/python"/> -->
+    </node>
+</launch>
