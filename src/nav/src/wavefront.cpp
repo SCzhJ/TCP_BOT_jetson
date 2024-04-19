@@ -177,7 +177,7 @@ int main(int argc, char** argv) {
     transformStamped.header.stamp = ros::Time::now();
     transformStamped.header.frame_id = base_frame;
     transformStamped.child_frame_id = laser_frame;
-    transformStamped.transform.translation.x = 0.07;
+    transformStamped.transform.translation.x = 0.015;
     transformStamped.transform.translation.y = 0;
     transformStamped.transform.translation.z = 0;
     transformStamped.transform.rotation.x = 0;

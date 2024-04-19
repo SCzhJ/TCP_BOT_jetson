@@ -15,7 +15,7 @@ int main(int argc, char** argv){
     geometry_msgs::TransformStamped transformStamped1;
     transformStamped1.header.frame_id = "base_link";
     transformStamped1.child_frame_id = "laser";
-    transformStamped1.transform.translation.x = 0.07;
+    transformStamped1.transform.translation.x = 0.015;
     transformStamped1.transform.translation.y = 0;
     transformStamped1.transform.translation.z = 0;
     transformStamped1.transform.rotation.x = 0;
@@ -23,7 +23,7 @@ int main(int argc, char** argv){
     transformStamped1.transform.rotation.z = 0;
     transformStamped1.transform.rotation.w = 1;
 
-    ros::Rate rate(20.0);
+    ros::Rate rate(1.0);
     while (nh.ok()){
         transformStamped1.header.stamp = ros::Time::now();
         broadcaster.sendTransform(transformStamped1);

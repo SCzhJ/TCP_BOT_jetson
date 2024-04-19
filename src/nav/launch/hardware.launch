@@ -1,5 +1,6 @@
 <launch>
     <include file="$(find mobile)/launch/ser.launch" />
+    <include file="$(find mobile)/launch/serArm.launch" />
     <include file="$(find lslidar_driver)/launch/lslidar_serial.launch" />
     <node pkg="nav" type="real_robot_transform" name="real_robot_transform" output="screen" />
 </launch>
