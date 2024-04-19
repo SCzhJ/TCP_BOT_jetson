@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.8
 
 from typing import List
 import rospy
@@ -171,6 +171,7 @@ class NavCtrl:
                     self._as.set_preempted()
                     vel.linear.x = 0
                     vel.linear.y = 0
+                    vel.angular.x = 1
                     vel.angular.z = 0
                     self.cmd_publisher.publish(vel)
                     return 0
@@ -228,7 +229,7 @@ if __name__=="__main__":
     dt = 0.2
     trajectories = \
         TrajectoryMode.DifferentialDriveTrajectory(x_vel=0.4, omega_increment=0.15, num_of_traj_one_side=7) +\
-        TrajectoryMode.FixcostTrajectory(x_vel=-0.5, y_vel=0, omega=0, fix_cost=99) +\
+        TrajectoryMode.FixcostTrajectory(x_vel=-0.2, y_vel=0, omega=0, fix_cost=99) +\
         TrajectoryMode.TurnTrajectory(x_vel=0.2, omega_increment=1.2, num_of_traj_one_side=1)
         # TrajectoryMode.DifferentialDriveTrajectory(x_vel=-0.2, omega_increment=0.15, num_of_traj_one_side=3)
 

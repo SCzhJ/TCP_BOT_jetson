@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="map" default="lg205part.yaml" />
+  <arg name="map" default="eventAself.yaml" />
   <node name="map_server" pkg="map_server" type="map_server" args="$(find nav)/map/$(arg map)"/>
 
   <node pkg="amcl" type="amcl" name="amcl" output="screen">
