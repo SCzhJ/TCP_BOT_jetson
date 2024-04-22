@@ -37,7 +37,7 @@ def done_cb(state, result):
     global done
     done = True
 
-goal_points = [[1.5, 0.0], [-0.5, -1.0]]
+goal_points = [[0.5, 0.5], [4.5, 0.5]]
 goal_len = len(goal_points)
 goal_pointer = -1
 

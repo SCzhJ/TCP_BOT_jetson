@@ -5,7 +5,7 @@
   <node pkg="nav" type="nav_ctrl.py" name="nav_ctrl" output="screen" >
     <param name="world_frame" value="map"/>
     <param name="robot_frame" value="base_link"/>
-    <param name="cost_map_path" value="/home/nvidia/tcpb_ws/src/nav/scripts/DWA/CostMap/eventAself" />
+    <param name="cost_map_path" value="/home/nvidia/tcpb_ws/src/nav/scripts/DWA/CostMap/lg205back" />
     <param name="dyn_map_name" value="/grid"/>
   </node>
   <!-- <node pkg="nav" type="NavClient.py" name="NavClient" output="screen" /> -->
@@ -13,7 +13,7 @@
 
   <node pkg="nav" type="Dec.py" name="Dec" output="screen" />
   <node pkg="nav" type="RRT_star_srv.py" name="RRT_star_srv">
-    <param name="map_name" type="string" value="/home/nvidia/tcpb_ws/src/nav/scripts/DWA/CostMap/eventAself" />
+    <param name="map_name" type="string" value="/home/nvidia/tcpb_ws/src/nav/scripts/DWA/CostMap/lg205back" />
   </node>
 
 </launch>

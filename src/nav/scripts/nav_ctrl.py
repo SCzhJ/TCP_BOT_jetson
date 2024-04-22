@@ -78,7 +78,8 @@ class NavCtrl:
         # other
         self.cmd_publisher = rospy.Publisher(cmd_vel_topic, Twist, queue_size=10)
         self.dt = dt
-        self.vel_scaler = 1
+        self.vel_scaler = 1.2
+        self.omega_scaler = 1.2
         self.loc_tran = None
     
     def call_rrt_star(self, curr_x: float, curr_y: float, goal_x: float, goal_y: float):
@@ -165,14 +166,15 @@ class NavCtrl:
             rate = rospy.Rate(1/self.dt)
             vel = Twist()
             scaler = self.vel_scaler
+            omega_scaler = self.omega_scaler
             while dist_to_goal > self.within_goal and not rospy.is_shutdown():
                 if self._as.is_preempt_requested():
                     rospy.loginfo('%s: Preempted' % self._action_name)
                     self._as.set_preempted()
                     vel.linear.x = 0
                     vel.linear.y = 0
-                    vel.angular.x = 1
                     vel.angular.z = 0
+                    vel.angular.x = 0
                     self.cmd_publisher.publish(vel)
                     return 0
                 next_point = self.get_next_point(self.loc_tran.transform.translation.x, 
@@ -188,13 +190,14 @@ class NavCtrl:
                     best_traj_point_list.append(Point(point[0][0], point[1][0], 0.15))
                 best_traj_publisher.publish_point_list(best_traj_point_list)
 
+                vel.angular.x = 1
                 vel.linear.x = x_vel/scaler
                 vel.linear.y = y_vel/scaler
                 # if next_point == Point(goal.goal_x, goal.goal_y, 0):
                 #     vel.linear.x = x_vel/scaler / 2
                 #     vel.linear.y = -y_vel/scaler/ 2
 
-                vel.angular.z = omega
+                vel.angular.z = omega/omega_scaler
                 self.cmd_publisher.publish(vel)
 
                 traj_point_list = []

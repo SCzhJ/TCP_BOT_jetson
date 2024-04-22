@@ -26,7 +26,7 @@ if __name__=="__main__":
 
     folder_path = "/home/nvidia/tcpb_ws/src/nav/scripts/DWA/"
     # map_path=rospy.get_param(node_name+"/map_path")
-    file_name = "CostMap/"+"eventAself"
+    file_name = "CostMap/"+"lg205back"
     cost_map = CostMap(robot_radius=0.3,a=2.5,b=1.8)
     rospy.loginfo("CostMap object done")
     cost_map.store_raw_map(folder_path+file_name)
