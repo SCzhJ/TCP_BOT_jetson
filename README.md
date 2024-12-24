@@ -7,7 +7,7 @@ Code on Arduino Board: https://github.com/SCzhJ/TCP_Bot
 
 ## **video demo**(Click to view)
 
-[![Watch the video](https://img.youtube.com/vi/wg9DJbQ0nek/0.jpg)](https://www.youtube.com/watch?v=wg9DJbQ0nek)
+[![Watch the video](https://img.youtube.com/vi/EgZxdo0k40g/0.jpg)](https://www.youtube.com/watch?v=EgZxdo0k40g)
 
 ## Functions
 - Autonomous Navigation
