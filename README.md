@@ -1,5 +1,7 @@
 # Trash Collection Patrol Bot
 
+ROS1 workspace on jetson nano. Includes code for navigation and object recognition.
+
 Code on Arduino Board: https://github.com/SCzhJ/TCP_Bot
 
 **Participated 9th innoshow** https://innoacademy.engg.hku.hk/innoshow9/
